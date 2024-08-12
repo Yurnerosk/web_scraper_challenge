@@ -76,3 +76,7 @@ class CustomSelenium:
 my_driver = CustomSelenium()
 options = my_driver.set_chrome_options()
 my_driver.set_webdriver()
+my_link = 'https://gothamist.com/'
+# my_driver.open_url(url=my_link)
+my_driver.full_page_screenshot(url = my_link)
+my_driver.driver_quit()
