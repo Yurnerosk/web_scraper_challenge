@@ -1,8 +1,8 @@
-from RPA.core.webdriver import cache, download, start
 import logging
 from selenium import webdriver
-
-
+# from RPA.core.webdriver import cache, download, start
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 class CustomSelenium:
 
@@ -24,14 +24,21 @@ class CustomSelenium:
 
     def set_webdriver(self, browser="Chrome"):
         options = self.set_chrome_options()
-        executable_driver_path = cache(browser)
-        if not executable_driver_path:
-            executable_driver_path = download(browser)
-            self.logger.warning("Using downloaded driver: %s" % executable_driver_path)
-        else:
-            self.logger.warning("Using cached driver: %s" % executable_driver_path)
+        # executable_driver_path = cache(browser)
+        # if not executable_driver_path:
+        #     executable_driver_path = download(browser)
+        #     self.logger.warning("Using downloaded driver: %s" % executable_driver_path)
+        # else:
+        #     self.logger.warning("Using cached driver: %s" % executable_driver_path)
+        # self.driver = start("Chrome", executable_path=str(executable_driver_path), options=options)
+        # Use webdriver_manager to handle driver download and caching
+            # No need to pass executable_path
+        service = Service(ChromeDriverManager().install())
 
-        self.driver = start("Chrome", executable_path=str(executable_driver_path), options=options)
+        # Initialize the WebDriver with the service and options
+        self.driver = webdriver.Chrome(service=service, options=options)
+
+        self.logger.warning("WebDriver initialized successfully.")
 
     def set_page_size(self, width:int, height:int):
         #Extract the current window size from the driver
@@ -65,3 +72,7 @@ class CustomSelenium:
         self.driver.set_window_size(page_width, page_height)
         self.driver.save_screenshot('screenshot.png')
         self.driver.quit()
+
+my_driver = CustomSelenium()
+options = my_driver.set_chrome_options()
+my_driver.set_webdriver()

@@ -13,6 +13,10 @@ dependencies:
   - pip:
     - robotframework-browser==17.5.2  # https://github.com/MarketSquare/robotframework-browser/releases
     - rpaframework==27.7.0            # https://rpaframework.org/releasenotes.html
-
+    - webdriver-manager==4.0.2        # https://pypi.org/project/webdriver-manager/4.0.2/
 rccPostInstall:
   - rfbrowser init                    # Initialize Playwright
+
+
+# WARNING!!
+# this tccpostinstall did not work, just run 'rfbrowser init' manually, and it should work.
