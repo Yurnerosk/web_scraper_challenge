@@ -3,8 +3,12 @@
 
 tasks:
   # Task names here are used when executing the bots, so renaming these is recommended.
-  Browser Example:
-    shell: python -m robot --report NONE --outputdir output --logtitle "Task log" tasks.robot
+  # Browser Example:
+    # shell: python -m robot --report NONE --outputdir output --logtitle "Task log" tasks.robot
+  Minimal Task:
+    shell: python -m robocorp.tasks run tasks.py
+
+devTasks: {}
 
 environmentConfigs:
   - environment_windows_amd64_freeze.yaml
