@@ -14,6 +14,7 @@ import re
 import requests
 from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timezone
+from robocorp import log
 
 class CustomSelenium:
 
