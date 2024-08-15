@@ -23,6 +23,8 @@ import re
 import os
 import ssl
 import urllib3
+import gevent.monkey
+gevent.monkey.patch_all()
 import requests
 
 class CustomSelenium:
@@ -43,6 +45,7 @@ class CustomSelenium:
             "phrase_count": [],
             "contains_money": [],
         }
+        self._picture_link_list = []
 
     
     def setup_output_folder(self):
@@ -56,16 +59,20 @@ class CustomSelenium:
         else:
             self.file.create_directory(output_dir)
 
-    def calculate_daterange(self) -> Tuple[str, str]:
+    def calculate_daterange(self) -> Tuple[datetime, datetime]:
         """ Returns the start_date and end_date.
         Calculates the dates based on today's date and the MONTHS_NUMBER from the config_manager.py file
         If the MONTHS_NUMBER input equals 0 is replaced to 1 to ensure both 0 an 1 can work to subtract 1 month from today's date
         """
         today = date.today()
-        months_number = ConfigManager.MONTHS_NUMBER
-        if not months_number: months_number = 1
-        start_date = (today - relativedelta(months=months_number)).strftime('%Y-%m-%d')
-        end_date = today.strftime('%Y-%m-%d')
+        months_number = int(ConfigManager.MONTHS_NUMBER)
+        if months_number == 0:
+            months_number = 1
+        # start_date = (today - relativedelta(months=months_number)).strftime('%Y-%m-%d')
+        # end_date = today.strftime('%Y-%m-%d')
+        start_date = (today - relativedelta(months=months_number))
+        end_date = today
+
         return start_date, end_date
 
     def set_chrome_options(self):
@@ -207,7 +214,7 @@ class CustomSelenium:
         description = article.find_element(By.CSS_SELECTOR, description_locator).text
         return description
     
-    def get_news_date(self, article: WebElement) -> str:
+    def get_news_date(self, article: WebElement) -> Tuple[datetime, str]:
         """ Returns the Description of the current article by looking for the '.promo-title a' css selector
         """
         date_locator = '.promo-timestamp'
@@ -216,8 +223,48 @@ class CustomSelenium:
         timestamp_seconds = timestamp_ms / 1000
         date = datetime.fromtimestamp(timestamp_seconds, tz=timezone.utc)
         date_string = date.strftime('%b. %d, %Y %H:%M:%S')  # Example format: "Aug. 14, 2024 12:34:56"
-        return date_string
+        return date, date_string
     
+    def get_search_count(self, search_phrase: str, article_text: str) -> int:
+        """ counts the amount of occurrences of the search phrase in the article text,
+        keeping in mind to lower both
+        """
+        search_count = article_text.lower().count(search_phrase.lower())
+        return search_count
+
+    def money_pattern(self, article_text: str) -> bool:
+        patterns = [
+            r"\$\d{1,3}(,\d{3})*(\.\d{2})?",  # Matches $11.1 or $111,111.11
+            r"\b\d+\s+dollars?\b",             # Matches 11 dollars
+            r"\b\d+\s+USD\b"                   # Matches 11 USD
+        ]
+
+        # Combine patterns into one
+        combined_pattern = r"|".join(patterns)
+        if re.search(combined_pattern, article_text, re.IGNORECASE):
+            return True
+        else:
+            return False
+
+    def get_image_url(self, article:WebElement) -> str:
+        image_locator ='img'
+        image_element = article.find_element(By.CSS_SELECTOR, image_locator)
+        image_src = image_element.get_attribute('src')
+        return image_src
+    
+
+
+
+    def get_article_picture_url(self, article: WebElement) -> Optional[str]:
+        """ Returns the picture url of the current article by looking for the <img> tag
+        """
+        try:
+            picture_locator = 'figure div img'
+            picture_url = article.find_element('css selector', picture_locator).get_property('src')
+            return picture_url
+        except ElementNotFound:
+            return None
+
     def kill_popup(self):
         ''' Closes the popup asking if I want to pay for scraping news
         '''
@@ -242,6 +289,27 @@ class CustomSelenium:
         '''
         self._driver.execute_script("window.scrollTo(0, 0);")
 
+    def get_article_picture_filename(self, picture_url: str) -> str:
+        """ Returns the picture filename by cleaning the base img URL. """
+        # Extract the part after the last '%2F'
+        picture_filename = picture_url.split(r'%2F')[-1]
+        return picture_filename
+
+    def download_article_picture(self):
+        """ Downloads the article picture if available based on an input url
+        """
+        for i in range(len(self._picture_link_list)):
+            picture_url = self._picture_link_list[i]
+            picture_filename = self._news_list["picture_filename"][i]
+    
+            output_folder = os.path.join(os.getcwd(), 'output')
+            output_path = os.path.join(output_folder, picture_filename)
+            response = requests.get(picture_url)
+            # Download
+            if response.status_code:
+                fp = open(output_path, 'wb')
+                fp.write(response.content)
+                fp.close()
 
     def news_fetch(self):
         ''' Main function that calls the rest of them
@@ -300,19 +368,35 @@ class CustomSelenium:
         time.sleep(8)
         #Ok. Time to work!
 
+        self.start_date, self.end_date = self.calculate_daterange()
+
         promo_elements = self._driver.find_elements(By.CSS_SELECTOR, value='ps-promo.promo')
 
         for promo in promo_elements:
-            print(promo)
+            print(self.start_date, self.end_date)
             title = self.get_news_title(promo)
             description = self.get_news_description(promo)
-            date = self.get_news_date(promo)
+            date, date_str = self.get_news_date(promo)
+            print(date)
+            print(date > self.start_date)
+            title_and_description = title + ' ' + description
+            search_count = self.get_search_count(search_phrase=ConfigManager.SEARCH_PHRASE, article_text=title_and_description)
+            has_money = self.money_pattern(article_text=title_and_description)
+            image_url = self.get_image_url(article=promo)
+            image_name = self.get_article_picture_filename(picture_url = image_url)
+            
             self._news_list["title"].append(title)
             self._news_list["description"].append(description)
-            self._news_list["date"].append(date)
+            self._news_list["date"].append(date_str)
+            self._news_list["phrase_count"].append(search_count)
+            self._news_list["contains_money"].append(has_money)
+            self._picture_link_list.append(image_url)
+            self._news_list["picture_filename"].append(image_name)
+
 
         self.excel.write_in_excel_file(self._news_list)
-
+        # for i in range(len(self._news_list["picture_filename"])):
+        # self.download_article_picture()
 
 
 
