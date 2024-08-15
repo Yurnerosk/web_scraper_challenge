@@ -19,6 +19,15 @@ from robocorp import log
 class CustomSelenium:
 
     excel = ExcelManager()
+    _news_list = {
+        "title": [],
+        "date": [],
+        "description": [],
+        "picture_filename": [],
+        "phrase_count": [],
+        "contains_money": [],
+        }
+    _picture_link_list = []
 
     def __init__(self) -> None:
         self._driver = None
@@ -26,17 +35,8 @@ class CustomSelenium:
         self._file = FileSystem()
 
         # Data required by the challenge:
-        self._news_list = {
-            "title": [],
-            "date": [],
-            "description": [],
-            "picture_filename": [],
-            "phrase_count": [],
-            "contains_money": [],
-        }
-        self._picture_link_list = []
         self.set_chrome_options
-        self.setup_output_folder()
+        # self.setup_output_folder()
 
     def set_chrome_options(self):
         if self._options is None:
