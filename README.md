@@ -38,7 +38,7 @@ This project handles as many sections you want(as long it exists in database).
 {
   "search_phrase": "climate",
   "sections": [
-    'world & nation', 'california'
+    "world & nation", "california"
   ],
   "months_number": 1
 }

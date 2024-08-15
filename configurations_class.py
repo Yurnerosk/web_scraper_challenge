@@ -2,22 +2,18 @@ from RPA.Robocorp.WorkItems import WorkItems
 
 class ConfigManager:
 
-    # wi = WorkItems()
-    # wi.get_input_work_item()
-    # SEARCH_PHRASE = wi.get_work_item_variable("search_phrase")
-    # SECTIONS = wi.get_work_item_variable("sections")
-    # MONTHS_NUMBER = wi.get_work_item_variable("months_number")
+    wi = WorkItems()
+    wi.get_input_work_item()
+    SEARCH_PHRASE = wi.get_work_item_variable("search_phrase")
+    SECTIONS = wi.get_work_item_variable("sections")
+    MONTHS_NUMBER = wi.get_work_item_variable("months_number")
     
-    SEARCH_PHRASE = 'climate'
-    # SECTIONS = ['world & nation', 'california', 'opinion', 'entertainment & arts', 'food']
-    SECTIONS = ['world & nation']
-    MONTHS_NUMBER = '1'
+    # SEARCH_PHRASE = "climate"
+    # SECTIONS = ["world & nation"]
+    # MONTHS_NUMBER = "1"
 
     # &s=1 means order by newest
-    BASE_URL = "https://www.latimes.com/search?q=[search_phrase]&s=1"
-
-    PREFIX = '&f0='
-    PAGE_SUFFIX = '&p='
+    BASE_URL = "https://www.latimes.com/"
 
     # section codes doesn't have a determined sequence.
     SECTION_CODES = {

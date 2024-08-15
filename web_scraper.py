@@ -1,7 +1,9 @@
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver import ChromeOptions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from RPA.FileSystem import FileSystem
+
 from typing import Tuple, Optional
 from configurations_class import ConfigManager
 from excel_class import ExcelManager
@@ -32,7 +34,21 @@ class CustomSelenium:
             "contains_money": [],
         }
         self._picture_link_list = []
+        self.set_chrome_options
         self.setup_output_folder()
+
+    def set_chrome_options(self):
+        if self._options is None:
+            self._options = ChromeOptions()
+            self._options.add_argument('--headless')
+            self._options.add_argument('--no-sandbox')
+            self._options.add_argument("--disable-extensions")
+            self._options.add_argument("--disable-gpu")
+            self._options.add_argument('--disable-web-security')
+            self._options.add_argument("--start-maximized")
+            self._options.add_argument('--remote-debugging-port=9222')
+            self._options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        return self._options
 
     def setup_output_folder(self):
         """ Creates output folder if not exists
@@ -193,7 +209,7 @@ class CustomSelenium:
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
-        self.open_url('https://www.latimes.com/')
+        self.open_url(ConfigManager.BASE_URL)
         button_xpath = "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 bg-transparent border-0 text-header-text-color cursor-pointer transition-colors hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
         button = self._driver.find_element(By.XPATH, button_xpath)
         button.click()
@@ -277,6 +293,6 @@ class CustomSelenium:
         for i in range(len(self._news_list["picture_filename"])):
             self.download_article_picture()
 
-cs = CustomSelenium()
-cs.set_webdriver()
-cs.news_fetch()
+# cs = CustomSelenium()
+# cs.set_webdriver()
+# cs.news_fetch()
