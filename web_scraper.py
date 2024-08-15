@@ -36,11 +36,13 @@ class CustomSelenium:
 
         # Data required by the challenge:
         self.set_chrome_options
+        self.set_webdriver()
         # self.setup_output_folder()
 
     def set_chrome_options(self):
         if self._options is None:
             self._options = ChromeOptions()
+            self._options.add_argument('--disable-dev-shm-usage')
             self._options.add_argument('--headless')
             self._options.add_argument('--no-sandbox')
             self._options.add_argument("--disable-extensions")
@@ -295,5 +297,4 @@ class CustomSelenium:
             self.download_article_picture()
 
 # cs = CustomSelenium()
-# cs.set_webdriver()
 # cs.news_fetch()
