@@ -21,7 +21,6 @@ dependencies:
     - beautifulsoup4==4.8.1       # https://beautiful-soup-4.readthedocs.io/en/latest/
     - lxml==5.2.2                 # https://lxml.de/5.2/changes-5.2.2.html
     - requests==2.32.3            # https://pypi.org/project/requests/#history
-    - gevent==24.2.1              # https://pypi.org/project/gevent/
 rccPostInstall:
   - rfbrowser init                    # Initialize Playwright
 

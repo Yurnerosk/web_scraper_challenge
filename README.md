@@ -1,27 +1,53 @@
-# Template: Robot Framework - Browser automation with Playwright
+# !!! WEB SCRAPER CHALLENGE !!!
+## Browser Automation with Selenium and Chrome, designed for Robocorp Control Room 
 
-Want to build a [Playwright](https://playwright.dev/)-based browser robot? Great!
+Hello, welcome to my web scraper repository!
 
-This template robot:
+This project has 3 parts:
 
-- Uses [Robot Framework](https://robocorp.com/docs/languages-and-frameworks/robot-framework/basics) syntax.
-- Includes all the necessary dependencies and initialization commands (`conda.yaml`).
-- Solves the form challenge posted at http://rpachallenge.com. (`tasks.robot`).
+- configurations_class.py : Responsible for importing Robocorp Control Room commands;
+- excel_class.py : Responsible for saving the excel file;
+- web_scraper.py : Responsible for general navigation and data gathering.
 
-## RPA Form challenge
+## Challenge
 
-The challenge consists of downloading an Excel spreadsheet, extracting the data from it and filling the form on the website with the data for ten times.
+This challenge consists of using the website [LA Times](https://www.latimes.com/) to scrape some news. The process
+has to follow certain instructions:
 
-More in detail, when run, this robot will:
+- Open link;
+- Enter a "search_phrase";
+- On the result page:
+    - select the desired topics from "sections"
+    - select newest news
+    - if possible, filter by N last months. If N=0 then N=1.
+- Get the values: title, date, and description;
+- See if there is money involved, count search phrase in title and description;
+- Store info in Excel file;
+- Gather the pictures and their names.
 
-- download the test Excel file from the rpachallenge.com website
-- collect the data from the downloaded Excel file
-- start the challenge clicking on the Start button
-- loop through the data and fill the forms for 10 times
-- take a screenshot of the results page
-- write log and report files
-- close the browser
+**Note:** In this website, there is no such filter for dates, so a loop was created in order to mimic 
+the function.
 
-## Learning materials
+Needless to say that this was a interesting exercise and brought a lot of learning materials.
 
-- [Using the Robot Framework Browser library, based on Playwright](https://robocorp.com/docs/development-guide/browser/playwright)
+## Robocorp Input example
+
+This project handles as many sections you want(as long it exists in database).
+
+```
+{
+  "search_phrase": "climate",
+  "sections": [
+    'world & nation', 'california'
+  ],
+  "months_number": 1
+}
+
+```
+
+## Dependencies
+- RPA Framework
+- Robocorp
+- Selenium
+
+All of the required dependencies are listed in [conda.YAML](https://github.com/Yurnerosk/web_scraper_challenge/blob/main/conda.yaml).
