@@ -85,9 +85,9 @@ class CustomSelenium:
         self._driver.get(url)
 
     def set_webdriver(self):
-        if self._driver is None:
-            self._driver = webdriver.Chrome(options=self._options)
-        return self._driver
+        # if self._driver is None:
+        self._driver = webdriver.Chrome(options=self._options)
+        # return self._driver
         print("WebDriver initialized successfully.")
 
     def get_image_url(self, article:WebElement) -> str:
