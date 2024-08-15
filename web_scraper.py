@@ -217,6 +217,32 @@ class CustomSelenium:
         date = datetime.fromtimestamp(timestamp_seconds, tz=timezone.utc)
         date_string = date.strftime('%b. %d, %Y %H:%M:%S')  # Example format: "Aug. 14, 2024 12:34:56"
         return date_string
+    
+    def kill_popup(self):
+        ''' Closes the popup asking if I want to pay for scraping news
+        '''
+        shadow_host_selector = 'modality-custom-element'
+        close_pop_locator = '.met-flyout-close'
+        shadow_host = self._driver.find_element(By.CSS_SELECTOR, value=shadow_host_selector)
+        time.sleep(8)
+        shadow_root = self._driver.execute_script("return arguments[0].shadowRoot", shadow_host)
+        time.sleep(8)
+        close_pop = shadow_root.find_element(By.CSS_SELECTOR, value=close_pop_locator)
+        time.sleep(8)
+        close_pop.click()
+
+    def scrolldown(self):
+        ''' Scrolls for a distance; it is useful to activate the popup before it messes up
+        something else.
+        '''
+        self._driver.execute_script("window.scrollBy(0, 1000);")
+
+    def scrolltop(self):
+        ''' Scrolls back to top position
+        '''
+        self._driver.execute_script("window.scrollTo(0, 0);")
+
+
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
@@ -235,6 +261,16 @@ class CustomSelenium:
         
         time.sleep(8)
         
+        self.scrolldown()
+        time.sleep(8)
+        
+        self.scrolltop()
+        time.sleep(8)
+
+        self.kill_popup()
+
+        time.sleep(8)
+
         for section in ConfigManager.SECTIONS:
             filter_xpath = ConfigManager.SECTION_CODES[section]
             print(section)
@@ -253,8 +289,7 @@ class CustomSelenium:
                 see_all = self._driver.find_element(By.CSS_SELECTOR, "body > div:nth-child(4) > ps-search-results-module:nth-child(2) > form:nth-child(1) > div:nth-child(2) > ps-search-filters:nth-child(1) > div:nth-child(1) > aside:nth-child(1) > div:nth-child(2) > div:nth-child(4) > div:nth-child(1) > ps-toggler:nth-child(1) > ps-toggler:nth-child(2) > button:nth-child(2) > span:nth-child(1)")
                 see_all.click()
                 time.sleep(8)
-
-        #         # Now, retry clicking element A
+                # Now, retry clicking element A
                 filter2 = self._driver.find_element(By.XPATH, filter_xpath)
                 filter2.click()
                 time.sleep(8)
