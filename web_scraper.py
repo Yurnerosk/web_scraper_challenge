@@ -1,9 +1,10 @@
 from selenium.webdriver.remote.webelement import WebElement
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver import ChromeOptions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from RPA.FileSystem import FileSystem
-
+from RPA.Browser.Selenium import Selenium
 from typing import Tuple, Optional
 from configurations_class import ConfigManager
 from excel_class import ExcelManager
@@ -15,27 +16,29 @@ import requests
 from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timezone
 from robocorp import log
+import logging
 
 class CustomSelenium:
 
     excel = ExcelManager()
-    _news_list = {
-        "title": [],
-        "date": [],
-        "description": [],
-        "picture_filename": [],
-        "phrase_count": [],
-        "contains_money": [],
-        }
-    _picture_link_list = []
+
+    
 
     def __init__(self) -> None:
         self._driver = None
         self._options = None
         self._file = FileSystem()
-
+        self._picture_link_list = []
+        self._news_list = {
+            "title": [],
+            "date": [],
+            "description": [],
+            "picture_filename": [],
+            "phrase_count": [],
+            "contains_money": [],
+            }
         # Data required by the challenge:
-        self.set_chrome_options
+        self.set_chrome_options()
         self.set_webdriver()
         # self.setup_output_folder()
 
@@ -43,13 +46,15 @@ class CustomSelenium:
         if self._options is None:
             self._options = ChromeOptions()
             self._options.add_argument('--disable-dev-shm-usage')
-            self._options.add_argument('--headless')
+            # self._options.add_argument('--headless')
             self._options.add_argument('--no-sandbox')
             self._options.add_argument("--disable-extensions")
             self._options.add_argument("--disable-gpu")
             self._options.add_argument('--disable-web-security')
             self._options.add_argument("--start-maximized")
             self._options.add_argument('--remote-debugging-port=9222')
+            # Ads gives out size error
+            # self._options.add_argument('--window-size=1920x1080')
             self._options.add_experimental_option("excludeSwitches", ["enable-logging"])
         return self._options
 
@@ -85,9 +90,11 @@ class CustomSelenium:
         self._driver.get(url)
 
     def set_webdriver(self):
-        # if self._driver is None:
+
+        # self._driver =  Selenium()
+        
         self._driver = webdriver.Chrome(options=self._options)
-        # return self._driver
+
         print("WebDriver initialized successfully.")
 
     def get_image_url(self, article:WebElement) -> str:
@@ -298,3 +305,4 @@ class CustomSelenium:
 
 # cs = CustomSelenium()
 # cs.news_fetch()
+# cs._driver.quit()

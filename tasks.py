@@ -5,3 +5,4 @@ from web_scraper import CustomSelenium
 def main():
     cs = CustomSelenium()
     cs.news_fetch()
+    cs._driver.quit()
