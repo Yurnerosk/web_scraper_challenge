@@ -45,8 +45,8 @@ class CustomSelenium:
 
     def set_chrome_options(self):
         if self._options is None:
-            # self._options = ChromeOptions()
-            self._options = Options()
+            self._options = ChromeOptions()
+            # self._options = Options()
 
             self._options.add_argument('--disable-dev-shm-usage')
             # self._options.add_argument('--headless')
@@ -93,7 +93,13 @@ class CustomSelenium:
         self._driver.get(url)
 
     def set_webdriver(self):
-        self._driver = webdriver.Chrome(options=self._options)
+
+        chrome_driver_path = ChromeDriverManager().install()
+        print(f"ChromeDriver is installed at: {chrome_driver_path}")
+        self._driver = webdriver.Chrome(executable_path=chrome_driver_path, options=self._options)
+
+
+        # self._driver = webdriver.Chrome(options=self._options)
         print("WebDriver initialized successfully.")
 
     def get_image_url(self, article:WebElement) -> str:
