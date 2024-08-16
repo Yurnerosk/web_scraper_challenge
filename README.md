@@ -34,11 +34,16 @@ Needless to say that this was a interesting exercise and brought a lot of learni
 
 This project handles as many sections you want(as long it exists in database).
 
+Available sections:
+
+"world & nation", "politics", "business", "opinion", "entertainment & arts", "archives", "travel & experiences", "science & medicine", "climate & environment", "books", "food", "movies", "sports", "television", "autos", "music", "greenspace", "letters to the editor"
+
+
 ```
 {
   "search_phrase": "climate",
   "sections": [
-    "science & medicine", "books"
+    "world & nation"
   ],
   "months_number": 1
 }

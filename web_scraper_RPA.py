@@ -311,6 +311,7 @@ class CustomSelenium:
         self.excel.write_in_excel_file(self._news_list)
         self.download_article_picture()
 
-cs = CustomSelenium()
-cs.news_fetch()
-cs._browser.close_browser()
+# not control room
+# cs = CustomSelenium()
+# cs.news_fetch()
+# cs._browser.close_browser()
