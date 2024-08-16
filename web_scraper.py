@@ -8,6 +8,7 @@ from RPA.Browser.Selenium import Selenium
 from typing import Tuple, Optional
 from configurations_class import ConfigManager
 from excel_class import ExcelManager
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
 import time
 import os
@@ -44,7 +45,9 @@ class CustomSelenium:
 
     def set_chrome_options(self):
         if self._options is None:
-            self._options = ChromeOptions()
+            # self._options = ChromeOptions()
+            self._options = Options()
+
             self._options.add_argument('--disable-dev-shm-usage')
             # self._options.add_argument('--headless')
             self._options.add_argument('--no-sandbox')
