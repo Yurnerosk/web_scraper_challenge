@@ -1,23 +1,34 @@
 """ Main webscraping module
 """
 
+# Standard library imports
 import time
 import os
 import re
 from datetime import date, datetime, timezone
 from typing import Tuple
 import logging
-import requests
 
+# Third-party imports
+import requests
+from dateutil.relativedelta import relativedelta
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    ElementClickInterceptedException,
+    ElementNotInteractableException,
+)
+from selenium.webdriver.remote.webelement import WebElement
+
+# Robocorp/RPA imports
 from RPA.FileSystem import FileSystem
 from RPA.Browser.Selenium import Selenium
 from robocorp import log
-from dateutil.relativedelta import relativedelta
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException
-from selenium.webdriver.remote.webelement import WebElement
+
+# Local application imports
 from configurations_class import ConfigManager
 from excel_class import ExcelManager
+
 
 logger = logging.getLogger(__name__)
 
