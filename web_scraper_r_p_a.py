@@ -318,8 +318,8 @@ class CustomSelenium:
 
         while limit_date >= self.start_date:
             limit_date = self.data_extractor(limit_date)
-            time.sleep(4)
-            self.turn_page()
+            if limit_date >= self.start_date:
+                self.turn_page()
 
         logger.info('Files determined. Starting file creation...')
         self.excel.write_in_excel_file(self._news_list)
