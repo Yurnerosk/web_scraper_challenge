@@ -47,7 +47,7 @@ class CustomSelenium:
         return self._options
 
     def set_webdriver(self):
-        self._browser.open_chrome_browser()
+        self._browser.open_chrome_browser(url="https://www.google.com.br/")
 
     def open_url(self, url: str, screenshot: str = None):
         """Opens the browser and navigates to the input URL."""
