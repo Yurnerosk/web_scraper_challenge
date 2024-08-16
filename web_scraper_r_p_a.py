@@ -182,13 +182,9 @@ class CustomSelenium:
         '''
         self.browser.execute_javascript("window.scrollTo(0, 0);")
 
-    def news_fetch(self):
-        ''' Main function that calls the rest of them
-        '''
-        logger.info('Initiated news fetch.')
-        # not control room
-        # self.browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
-        # control room
+    def navigate_to_search_area(self):
+        """ Initial navigation
+        """
         self.browser.open_chrome_browser(url=ConfigManager.BASE_URL)
 
         button_xpath = (
@@ -203,8 +199,8 @@ class CustomSelenium:
         button.click()
         search_box_xpath = "//input[@placeholder='Search']"
         search_box = self.browser.find_element(
-        f"xpath:{search_box_xpath}"
-    )
+            f"xpath:{search_box_xpath}"
+        )
         search_box.send_keys(ConfigManager.SEARCH_PHRASE)
         confirm_xpath = (
             "//button[@class='flex justify-center items-center transition-colors "
@@ -229,7 +225,9 @@ class CustomSelenium:
         # self.kill_popup()
         # time.sleep(8)
 
-        logger.info('Applying sections...')
+    def apply_sections(self):
+        """ Applies the desired topics
+        """
         for section in ConfigManager.SECTIONS:
             filter_xpath = ConfigManager.SECTION_CODES[section]
             logger.info(section, "applied.")
@@ -270,40 +268,57 @@ class CustomSelenium:
         drop_down_newest = self.browser.find_elements("tag:Option")
         drop_down_newest[1].click()
         time.sleep(8)
+
+    def data_extractor(self):
+        """ Finds the promo and rips the data we want
+        """
+        promo_elements = self.browser.find_elements("css:ps-promo.promo")
+
+        for promo in promo_elements:
+            limit_date, date_str = self.get_news_date(promo)
+            logger.info('Is %s within %s and %s?', limit_date, self.end_date, self.start_date)
+            logger.info(limit_date >= self.start_date)
+            if limit_date >= self.start_date:
+
+                title = self.get_news_title(promo)
+                description = self.get_news_description(promo)
+
+                title_and_description = title + ' ' + description
+                search_count = self.get_search_count(
+                    search_phrase=ConfigManager.SEARCH_PHRASE,
+                    article_text=title_and_description
+                )
+                has_money = self.money_pattern(article_text=title_and_description)
+                image_url = self.get_image_url(article=promo)
+                image_name = self.get_article_picture_filename(picture_url = image_url)
+
+                self._news_list["title"].append(title)
+                self._news_list["description"].append(description)
+                self._news_list["date"].append(date_str[:-9])
+                self._news_list["phrase_count"].append(search_count)
+                self._news_list["contains_money"].append(has_money)
+                self._picture_link_list.append(image_url)
+                self._news_list["picture_filename"].append(image_name)
+
+    def news_fetch(self):
+        ''' Main function that calls the rest of them
+        '''
+        logger.info('Initiated news fetch.')
+        # not control room
+        # self.browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
+        # control room
+        self.navigate_to_search_area()
+
+        logger.info('Applying sections...')
+
         #Ok. Time to work!
+        self.apply_sections()
 
         limit_date = self.end_date
 
         while limit_date >= self.start_date:
 
-            promo_elements = self.browser.find_elements("css:ps-promo.promo")
-
-            for promo in promo_elements:
-                limit_date, date_str = self.get_news_date(promo)
-                logger.info('Is %s within %s and %s?', limit_date, self.end_date, self.start_date)
-                logger.info(limit_date >= self.start_date)
-                if limit_date >= self.start_date:
-
-                    title = self.get_news_title(promo)
-                    description = self.get_news_description(promo)
-
-                    title_and_description = title + ' ' + description
-                    search_count = self.get_search_count(
-                        search_phrase=ConfigManager.SEARCH_PHRASE,
-                        article_text=title_and_description
-                    )
-                    has_money = self.money_pattern(article_text=title_and_description)
-                    image_url = self.get_image_url(article=promo)
-                    image_name = self.get_article_picture_filename(picture_url = image_url)
-
-                    self._news_list["title"].append(title)
-                    self._news_list["description"].append(description)
-                    self._news_list["date"].append(date_str[:-9])
-                    self._news_list["phrase_count"].append(search_count)
-                    self._news_list["contains_money"].append(has_money)
-                    self._picture_link_list.append(image_url)
-                    self._news_list["picture_filename"].append(image_name)
-
+            self.data_extractor()
             self.turn_page()
         logger.info('Files determined. Starting file creation...')
         self.excel.write_in_excel_file(self._news_list)
