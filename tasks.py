@@ -1,5 +1,5 @@
 from robocorp.tasks import task
-from web_scraper import CustomSelenium 
+from web_scraper_2 import CustomSelenium 
 
 @task
 def main():
