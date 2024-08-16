@@ -269,7 +269,7 @@ class CustomSelenium:
         drop_down_newest[1].click()
         time.sleep(8)
 
-    def data_extractor(self):
+    def data_extractor(self, limit_date):
         """ Finds the promo and rips the data we want
         """
         promo_elements = self.browser.find_elements("css:ps-promo.promo")
@@ -299,7 +299,7 @@ class CustomSelenium:
                 self._news_list["contains_money"].append(has_money)
                 self._picture_link_list.append(image_url)
                 self._news_list["picture_filename"].append(image_name)
-
+        return limit_date
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
@@ -317,9 +317,10 @@ class CustomSelenium:
         limit_date = self.end_date
 
         while limit_date >= self.start_date:
-
-            self.data_extractor()
+            limit_date = self.data_extractor(limit_date)
+            time.sleep(4)
             self.turn_page()
+
         logger.info('Files determined. Starting file creation...')
         self.excel.write_in_excel_file(self._news_list)
         self.download_article_picture()
