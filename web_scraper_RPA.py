@@ -1,36 +1,35 @@
-from selenium.webdriver.remote.webelement import WebElement
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver import ChromeOptions
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from RPA.FileSystem import FileSystem
-from RPA.Browser.Selenium import Selenium
-from typing import Tuple, Optional
-from configurations_class import ConfigManager
-from excel_class import ExcelManager
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
+""" Main webscraping module
+"""
+
 import time
 import os
 import re
-import requests
-from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timezone
-from robocorp import log
+from typing import Tuple
 import logging
+import requests
+
+from selenium.webdriver.common.by import By
+from RPA.FileSystem import FileSystem
+from RPA.Browser.Selenium import Selenium
+from robocorp import log
+from dateutil.relativedelta import relativedelta
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException
+from selenium.webdriver.remote.webelement import WebElement
+from configurations_class import ConfigManager
+from excel_class import ExcelManager
+
 logger = logging.getLogger(__name__)
 
 class CustomSelenium:
+    """Class representing a driver"""
 
     excel = ExcelManager()
     def __init__(self) -> None:
         self._browser = Selenium()
-        self._driver = None
-        self._options = None
         self._file = FileSystem()
         self._picture_link_list = []
-
+        self.start_date, self.end_date = self.calculate_daterange()
         # Data required by the challenge:
         self._news_list = {
             "title": [],
@@ -53,7 +52,7 @@ class CustomSelenium:
 
             output_folder = os.path.join(os.getcwd(), 'output')
             output_path = os.path.join(output_folder, picture_filename)
-            response = requests.get(picture_url, verify=False)
+            response = requests.get(picture_url, verify=False, timeout=10)
             # Download
             logger.info(i+1, "requested download of ", queue)
             if response.status_code:
@@ -63,6 +62,8 @@ class CustomSelenium:
                 logger.info(i+1, "downloaded of ", queue)
 
     def get_image_url(self, article:WebElement) -> str:
+        """ Returns the image link
+        """
         image_locator ='img'
         image_element = article.find_element(By.CSS_SELECTOR, image_locator)
         image_src = image_element.get_attribute('src')
@@ -70,51 +71,46 @@ class CustomSelenium:
 
     def calculate_daterange(self) -> Tuple[datetime, datetime]:
         """ Returns the start_date and end_date.
-        Calculates the dates based on today's date and the MONTHS_NUMBER from the config_manager.py file
-        If the MONTHS_NUMBER input equals 0 is replaced to 1 to ensure both 0 an 1 can work to subtract 1 month from today's date
+        Calculates the dates based on today's date and the MONTHS_NUMBER from the config_manager.py
+        file.
+        If the MONTHS_NUMBER input equals 0 is replaced to 1 to ensure both 0 an 1 can work
+        to subtract 1 month from today's date
         """
-        
         today = date.today()
         months_number = int(ConfigManager.MONTHS_NUMBER)
         if months_number == 0:
             months_number = 1
         # start_date = (today - relativedelta(months=months_number)).strftime('%Y-%m-%d')
         # end_date = today.strftime('%Y-%m-%d')
-        start_date = (today - relativedelta(months=months_number))
+        start_date = today - relativedelta(months=months_number)
         end_date = today
         logger.info('Calculated daterange')
 
         return start_date, end_date
 
-    def get_news_title(self, article: WebElement) -> str:
-        """ Returns the Title of the current article by looking for the '.promo-title a' css selector
-        """
-        title_locator = '.promo-title a'
-        title = article.find_element(By.CSS_SELECTOR, title_locator).text
-        return title
-
     def get_news_description(self, article: WebElement) -> str:
-        """ Returns the Description of the current article by looking for the '.promo-title a' css selector
+        """ Returns the Description of the current article by looking for the css selector
         """
         description_locator = '.promo-description'
         description = article.find_element(By.CSS_SELECTOR, description_locator).text
         return description
-    
+
     def get_news_date(self, article: WebElement) -> Tuple[datetime, str]:
-        """ Returns the Description of the current article by looking for the '.promo-title a' css selector
+        """ Returns the date of the current article by looking for the css selector
         """
         date_locator = '.promo-timestamp'
         timestamp_element = article.find_element(By.CSS_SELECTOR, date_locator)
         timestamp_ms = int(timestamp_element.get_attribute('data-timestamp'))
         timestamp_seconds = timestamp_ms / 1000
         datetime_obj = datetime.fromtimestamp(timestamp_seconds, tz=timezone.utc)
-        
+
         # Convert to date object
         date_obj = datetime_obj.date()
-        date_string = datetime_obj.strftime('%b. %d, %Y %H:%M:%S')  # Example format: "Aug. 14, 2024 12:34:56"
-        
+        date_string = datetime_obj.strftime('%b. %d, %Y %H:%M:%S')
+        # Example format: "Aug. 14, 2024 12:34:56"
+
         return date_obj, date_string
-    
+
     def get_search_count(self, search_phrase: str, article_text: str) -> int:
         """ counts the amount of occurrences of the search phrase in the article text,
         keeping in mind to lower both
@@ -123,6 +119,8 @@ class CustomSelenium:
         return search_count
 
     def money_pattern(self, article_text: str) -> bool:
+        """Finds a pattern defined by the challenge
+        """
         patterns = [
             r"\$\d{1,3}(,\d{3})*(\.\d{2})?",  # Matches $11.1 or $111,111.11
             r"\b\d+\s+dollars?\b",             # Matches 11 dollars
@@ -133,8 +131,7 @@ class CustomSelenium:
         combined_pattern = r"|".join(patterns)
         if re.search(combined_pattern, article_text, re.IGNORECASE):
             return True
-        else:
-            return False
+        return False
 
     def get_article_picture_filename(self, picture_url: str) -> str:
         """ Returns the picture filename by cleaning the base img URL. """
@@ -145,14 +142,14 @@ class CustomSelenium:
         return picture_filename
 
     def get_news_title(self, article) -> str:
-        """ Returns the Title of the current article by looking for the '.promo-title a' css selector
+        """ Returns the Title of the current article by looking for the css selector
         """
         title_locator = '.promo-title a'
         title = self._browser.find_element("css:{}".format(title_locator), parent=article).text
         return title
-    
+
     def turn_page(self):
-        """ Returns the Title of the current article by looking for the '.promo-title a' css selector
+        """ Turn to next page to search more results
         """
         turn_page_locator = "div[class='search-results-module-next-page'] a svg"
         turn_page = self._browser.find_element("css:{}".format(turn_page_locator))
@@ -175,10 +172,8 @@ class CustomSelenium:
         ''' Main function that calls the rest of them
         '''
         logger.info('Initiated news fetch.')
-
         # not control room
         # self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
-
         # control room
         self._browser.open_chrome_browser(url=ConfigManager.BASE_URL)
 
@@ -229,8 +224,6 @@ class CustomSelenium:
         drop_down_newest[1].click()
         time.sleep(8)
         #Ok. Time to work!
-        
-        self.start_date, self.end_date = self.calculate_daterange()
 
         limit_date = self.end_date
 
@@ -246,13 +239,13 @@ class CustomSelenium:
 
                     title = self.get_news_title(promo)
                     description = self.get_news_description(promo)
-                    
+
                     title_and_description = title + ' ' + description
                     search_count = self.get_search_count(search_phrase=ConfigManager.SEARCH_PHRASE, article_text=title_and_description)
                     has_money = self.money_pattern(article_text=title_and_description)
                     image_url = self.get_image_url(article=promo)
                     image_name = self.get_article_picture_filename(picture_url = image_url)
-                    
+
                     self._news_list["title"].append(title)
                     self._news_list["description"].append(description)
                     self._news_list["date"].append(date_str[:-9])

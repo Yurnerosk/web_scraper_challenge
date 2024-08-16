@@ -1,5 +1,8 @@
+"""tasks module
+"""
+
 from robocorp.tasks import task
-from web_scraper_RPA import CustomSelenium 
+from web_scraper_rpa import CustomSelenium 
 
 @task
 def main():
