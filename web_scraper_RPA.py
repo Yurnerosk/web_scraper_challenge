@@ -220,7 +220,8 @@ class CustomSelenium:
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
-        self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
+        # self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
+        self._browser.open_chrome_browser(url=ConfigManager.BASE_URL)
 
         button_xpath = "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 bg-transparent border-0 text-header-text-color cursor-pointer transition-colors hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
         button = self._browser.find_element("xpath:{}".format(button_xpath))
