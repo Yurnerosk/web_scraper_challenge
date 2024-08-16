@@ -7,7 +7,7 @@ This project has 3 parts:
 
 - configurations_class.py : Responsible for importing Robocorp Control Room commands;
 - excel_class.py : Responsible for saving the excel file;
-- web_scraper.py : Responsible for general navigation and data gathering.
+- web_scraper_r_p_a.py : Responsible for general navigation and data gathering.
 
 ## Challenge
 
