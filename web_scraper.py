@@ -48,7 +48,7 @@ class CustomSelenium:
         if self._options is None:
             self._options = ChromeOptions()
             # self._options = Options()
-
+            self._options.binary_location = "/usr/bin/chromium"
             self._options.add_argument('--disable-dev-shm-usage')
             # self._options.add_argument('--headless')
             self._options.add_argument('--no-sandbox')
