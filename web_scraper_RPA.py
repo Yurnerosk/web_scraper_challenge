@@ -220,7 +220,11 @@ class CustomSelenium:
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
+
+        # not control room
         # self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
+
+        # control room
         self._browser.open_chrome_browser(url=ConfigManager.BASE_URL)
 
         button_xpath = "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 bg-transparent border-0 text-header-text-color cursor-pointer transition-colors hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
@@ -240,7 +244,8 @@ class CustomSelenium:
         self.scrolltop()
         time.sleep(8)
 
-        self.kill_popup()
+        # does the popup not apper when control room?
+        # self.kill_popup()
         time.sleep(8)
 
         for section in ConfigManager.SECTIONS:
@@ -304,9 +309,8 @@ class CustomSelenium:
             self.turn_page()
 
         self.excel.write_in_excel_file(self._news_list)
-        for i in range(len(self._news_list["picture_filename"])):
-            self.download_article_picture()
+        self.download_article_picture()
 
-# cs = CustomSelenium()
-# cs.news_fetch()
-# cs._browser.close_browser()
+cs = CustomSelenium()
+cs.news_fetch()
+cs._browser.close_browser()
