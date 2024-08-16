@@ -23,12 +23,10 @@ from selenium.webdriver.remote.webelement import WebElement
 # Robocorp/RPA imports
 from RPA.FileSystem import FileSystem
 from RPA.Browser.Selenium import Selenium
-from robocorp import log
 
 # Local application imports
 from configurations_class import ConfigManager
 from excel_class import ExcelManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +35,7 @@ class CustomSelenium:
 
     excel = ExcelManager()
     def __init__(self) -> None:
-        self._browser = Selenium()
+        self.browser = Selenium()
         self._file = FileSystem()
         self._picture_link_list = []
         self.start_date, self.end_date = self.calculate_daterange()
@@ -156,14 +154,19 @@ class CustomSelenium:
         """ Returns the Title of the current article by looking for the css selector
         """
         title_locator = '.promo-title a'
-        title = self._browser.find_element("css:{}".format(title_locator), parent=article).text
+        title = self.browser.find_element(
+            f"css:{title_locator}",
+            parent=article
+        ).text
         return title
 
     def turn_page(self):
         """ Turn to next page to search more results
         """
         turn_page_locator = "div[class='search-results-module-next-page'] a svg"
-        turn_page = self._browser.find_element("css:{}".format(turn_page_locator))
+        turn_page = self.browser.find_element(
+            f"css:{turn_page_locator}"
+        )
         turn_page.click()
         time.sleep(8)
         logger.info('Next Page!')
@@ -172,30 +175,47 @@ class CustomSelenium:
         ''' Scrolls for a distance; it is useful to activate the popup before it messes up
         something else.
         '''
-        self._browser.execute_javascript("window.scrollBy(0, 1000);")
+        self.browser.execute_javascript("window.scrollBy(0, 1000);")
 
     def scrolltop(self):
         ''' Scrolls back to top position
         '''
-        self._browser.execute_javascript("window.scrollTo(0, 0);")
+        self.browser.execute_javascript("window.scrollTo(0, 0);")
 
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
         logger.info('Initiated news fetch.')
         # not control room
-        # self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
+        # self.browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
         # control room
-        self._browser.open_chrome_browser(url=ConfigManager.BASE_URL)
+        self.browser.open_chrome_browser(url=ConfigManager.BASE_URL)
 
-        button_xpath = "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 bg-transparent border-0 text-header-text-color cursor-pointer transition-colors hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
-        button = self._browser.find_element("xpath:{}".format(button_xpath))
+        button_xpath = (
+            "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 "
+            "bg-transparent border-0 text-header-text-color cursor-pointer transition-colors "
+            "hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid "
+            "md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
+        )
+        button = self.browser.find_element(
+            f"xpath:{button_xpath}"
+        )
         button.click()
         search_box_xpath = "//input[@placeholder='Search']"
-        search_box = self._browser.find_element("xpath:{}".format(search_box_xpath))
+        search_box = self.browser.find_element(
+        f"xpath:{search_box_xpath}"
+    )
         search_box.send_keys(ConfigManager.SEARCH_PHRASE)
-        confirm_xpath = "//button[@class='flex justify-center items-center transition-colors transition-bg cursor-pointer w-10 p-0 shrink-0 bg-transparent border-0']//*[name()='svg']"
-        confirm = self._browser.find_element("xpath:{}".format(confirm_xpath))
+        confirm_xpath = (
+            "//button[@class='flex justify-center items-center transition-colors "
+            "transition-bg cursor-pointer w-10 p-0 shrink-0 bg-transparent border-0']"
+            "//*[name()='svg']"
+        )
+
+        confirm = self.browser.find_element(
+            f"xpath:{confirm_xpath}"
+        )
+
         confirm.click()
         time.sleep(8)
 
@@ -213,25 +233,41 @@ class CustomSelenium:
         for section in ConfigManager.SECTIONS:
             filter_xpath = ConfigManager.SECTION_CODES[section]
             logger.info(section, "applied.")
-            filter = self._browser.find_element("xpath:{}".format(filter_xpath))
+            filter1 = self.browser.find_element(
+                f"xpath:{filter_xpath}"
+            )
             try:
                 # Attempt to click element A
                 time.sleep(8)
-                filter.click()
+                filter1.click()
                 time.sleep(8)
-            except (NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException):
+            except (
+                    NoSuchElementException,
+                    ElementClickInterceptedException,
+                    ElementNotInteractableException
+                ):
                 # If element A is not found or can't be clicked, click element B first
                 time.sleep(8)
-                see_all_css = "body > div:nth-child(4) > ps-search-results-module:nth-child(2) > form:nth-child(1) > div:nth-child(2) > ps-search-filters:nth-child(1) > div:nth-child(1) > aside:nth-child(1) > div:nth-child(2) > div:nth-child(4) > div:nth-child(1) > ps-toggler:nth-child(1) > ps-toggler:nth-child(2) > button:nth-child(2) > span:nth-child(1)"
-                see_all = self._browser.find_element("css:{}".format(see_all_css))
+                see_all_css = (
+                    "body > div:nth-child(4) > ps-search-results-module:nth-child(2) > "
+                    "form:nth-child(1) > div:nth-child(2) > ps-search-filters:nth-child(1) > "
+                    "div:nth-child(1) > aside:nth-child(1) > div:nth-child(2) > div:nth-child(4) > "
+                    "div:nth-child(1) > ps-toggler:nth-child(1) > ps-toggler:nth-child(2) > "
+                    "button:nth-child(2) > span:nth-child(1)"
+                )
+                see_all = self.browser.find_element(
+                    f"css:{see_all_css}"
+                )
                 see_all.click()
                 time.sleep(8)
                 # Now, retry clicking element A
-                filter2 = self._browser.find_element("xpath:{}".format(filter_xpath))
+                filter2 = self.browser.find_element(
+                    f"xpath:{filter_xpath}"
+                )
                 filter2.click()
                 time.sleep(8)
 
-        drop_down_newest = self._browser.find_elements("tag:Option")
+        drop_down_newest = self.browser.find_elements("tag:Option")
         drop_down_newest[1].click()
         time.sleep(8)
         #Ok. Time to work!
@@ -240,11 +276,11 @@ class CustomSelenium:
 
         while limit_date >= self.start_date:
 
-            promo_elements = self._browser.find_elements("css:ps-promo.promo")
+            promo_elements = self.browser.find_elements("css:ps-promo.promo")
 
             for promo in promo_elements:
                 limit_date, date_str = self.get_news_date(promo)
-                logger.info('is ',limit_date ,' within ',self.end_date , ' and ',  self.start_date, ' ? ')
+                logger.info('Is %s within %s and %s?', limit_date, self.end_date, self.start_date)
                 logger.info(limit_date >= self.start_date)
                 if limit_date >= self.start_date:
 
@@ -252,7 +288,10 @@ class CustomSelenium:
                     description = self.get_news_description(promo)
 
                     title_and_description = title + ' ' + description
-                    search_count = self.get_search_count(search_phrase=ConfigManager.SEARCH_PHRASE, article_text=title_and_description)
+                    search_count = self.get_search_count(
+                        search_phrase=ConfigManager.SEARCH_PHRASE,
+                        article_text=title_and_description
+                    )
                     has_money = self.money_pattern(article_text=title_and_description)
                     image_url = self.get_image_url(article=promo)
                     image_name = self.get_article_picture_filename(picture_url = image_url)
@@ -275,4 +314,4 @@ class CustomSelenium:
 # not control room
 # cs = CustomSelenium()
 # cs.news_fetch()
-# cs._browser.close_browser()
+# cs.browser.close_browser()

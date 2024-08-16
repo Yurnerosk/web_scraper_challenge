@@ -1,13 +1,16 @@
+""" Module of configurations
+"""
 from RPA.Robocorp.WorkItems import WorkItems
 
 class ConfigManager:
-
+    """ Configuration Manager
+    """
     wi = WorkItems()
     wi.get_input_work_item()
     SEARCH_PHRASE = wi.get_work_item_variable("search_phrase")
     SECTIONS = wi.get_work_item_variable("sections")
     MONTHS_NUMBER = wi.get_work_item_variable("months_number")
-    
+
     # SEARCH_PHRASE = "climate"
     # SECTIONS = ["world & nation"]
     # MONTHS_NUMBER = "1"
@@ -37,10 +40,4 @@ class ConfigManager:
         "music": "//input[@value='00000168-8679-d5d8-a76d-eff941690000']",
         "greenspace": "//input[@value='00000181-7484-d0b1-afcb-7fa7f5020008']",
         "letters to the editor": "//input[@value='0000017c-04e0-d7a2-a1fd-bdfe2ed80000']"
-
-
-
     }
-
-    
-    
