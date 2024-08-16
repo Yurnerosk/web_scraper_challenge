@@ -1,5 +1,6 @@
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver import ChromeOptions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -96,7 +97,8 @@ class CustomSelenium:
 
         chrome_driver_path = ChromeDriverManager().install()
         print(f"ChromeDriver is installed at: {chrome_driver_path}")
-        self._driver = webdriver.Chrome(executable_path=chrome_driver_path, options=self._options)
+        service = Service(executable_path=chrome_driver_path)
+        self._driver = webdriver.Chrome(service=service, options=self._options)
 
 
         # self._driver = webdriver.Chrome(options=self._options)
