@@ -156,7 +156,7 @@ class CustomSelenium:
         """
         turn_page_locator = "div[class='search-results-module-next-page'] a svg"
         turn_page = self._browser.find_element("css:{}".format(turn_page_locator))
-        turn_page.click_element_when_clickable()
+        turn_page.click()
         time.sleep(8)
         logger.info('Next Page!')
 
@@ -184,13 +184,13 @@ class CustomSelenium:
 
         button_xpath = "//button[@class='flex justify-center items-center h-10 py-0 px-2.5 bg-transparent border-0 text-header-text-color cursor-pointer transition-colors hover:opacity-80 xs-5:px-5 md:w-10 md:p-0 md:ml-2.5 md:border md:border-solid md:border-header-border-color md:rounded-sm lg:ml-3.75']//*[name()='svg']"
         button = self._browser.find_element("xpath:{}".format(button_xpath))
-        button.click_element_when_clickable()
+        button.click()
         search_box_xpath = "//input[@placeholder='Search']"
         search_box = self._browser.find_element("xpath:{}".format(search_box_xpath))
         search_box.send_keys(ConfigManager.SEARCH_PHRASE)
         confirm_xpath = "//button[@class='flex justify-center items-center transition-colors transition-bg cursor-pointer w-10 p-0 shrink-0 bg-transparent border-0']//*[name()='svg']"
         confirm = self._browser.find_element("xpath:{}".format(confirm_xpath))
-        confirm.click_element_when_clickable()
+        confirm.click()
         time.sleep(8)
 
         # self.scrolldown()
@@ -211,22 +211,22 @@ class CustomSelenium:
             try:
                 # Attempt to click element A
                 time.sleep(8)
-                filter.click_element_when_clickable()
+                filter.click()
                 time.sleep(8)
             except (NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException):
                 # If element A is not found or can't be clicked, click element B first
                 time.sleep(8)
                 see_all_css = "body > div:nth-child(4) > ps-search-results-module:nth-child(2) > form:nth-child(1) > div:nth-child(2) > ps-search-filters:nth-child(1) > div:nth-child(1) > aside:nth-child(1) > div:nth-child(2) > div:nth-child(4) > div:nth-child(1) > ps-toggler:nth-child(1) > ps-toggler:nth-child(2) > button:nth-child(2) > span:nth-child(1)"
                 see_all = self._browser.find_element("css:{}".format(see_all_css))
-                see_all.click_element_when_clickable()
+                see_all.click()
                 time.sleep(8)
                 # Now, retry clicking element A
                 filter2 = self._browser.find_element("xpath:{}".format(filter_xpath))
-                filter2.click_element_when_clickable()
+                filter2.click()
                 time.sleep(8)
 
         drop_down_newest = self._browser.find_elements("tag:Option")
-        drop_down_newest[1].click_element_when_clickable()
+        drop_down_newest[1].click()
         time.sleep(8)
         #Ok. Time to work!
         
