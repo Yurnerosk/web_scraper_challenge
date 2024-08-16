@@ -65,7 +65,7 @@ class CustomSelenium:
         """
         queue = len(self._picture_link_list)
         for i in range(queue):
-            print(i, "download of ", queue)
+            print(i+1, "download of ", queue)
             picture_url = self._picture_link_list[i]
             picture_filename = self._news_list["picture_filename"][i]
 
