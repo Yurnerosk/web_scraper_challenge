@@ -19,6 +19,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timezone
 from robocorp import log
 import logging
+logger = logging.getLogger(__name__)
 
 class CustomSelenium:
 
@@ -39,33 +40,14 @@ class CustomSelenium:
             "phrase_count": [],
             "contains_money": [],
             }
-        
-        self.set_chrome_options()
-
-    def set_chrome_options(self):
-        if self._options is None:
-            self._options = {
-                "binary_location": "/usr/bin/chromium",
-                "args": [
-                    '--disable-dev-shm-usage',
-                    # '--headless',
-                    '--no-sandbox',
-                    '--disable-extensions',
-                    '--disable-gpu',
-                    '--disable-web-security',
-                    "--start-maximized",
-                    '--remote-debugging-port=9222',
-                ],
-                "excludeSwitches": ["enable-logging"]
-            }
-        return self._options
 
     def download_article_picture(self):
         """ Downloads the article picture if available based on an input url
         """
+        logger.info('Starting to download pictures.')
         queue = len(self._picture_link_list)
         for i in range(queue):
-            print(i+1, "download of ", queue)
+
             picture_url = self._picture_link_list[i]
             picture_filename = self._news_list["picture_filename"][i]
 
@@ -73,10 +55,12 @@ class CustomSelenium:
             output_path = os.path.join(output_folder, picture_filename)
             response = requests.get(picture_url, verify=False)
             # Download
+            logger.info(i+1, "requested download of ", queue)
             if response.status_code:
                 fp = open(output_path, 'wb')
                 fp.write(response.content)
                 fp.close()
+                logger.info(i+1, "downloaded of ", queue)
 
     def get_image_url(self, article:WebElement) -> str:
         image_locator ='img'
@@ -89,6 +73,7 @@ class CustomSelenium:
         Calculates the dates based on today's date and the MONTHS_NUMBER from the config_manager.py file
         If the MONTHS_NUMBER input equals 0 is replaced to 1 to ensure both 0 an 1 can work to subtract 1 month from today's date
         """
+        
         today = date.today()
         months_number = int(ConfigManager.MONTHS_NUMBER)
         if months_number == 0:
@@ -97,6 +82,7 @@ class CustomSelenium:
         # end_date = today.strftime('%Y-%m-%d')
         start_date = (today - relativedelta(months=months_number))
         end_date = today
+        logger.info('Calculated daterange')
 
         return start_date, end_date
 
@@ -164,7 +150,6 @@ class CustomSelenium:
         title_locator = '.promo-title a'
         title = self._browser.find_element("css:{}".format(title_locator), parent=article).text
         return title
-
     
     def turn_page(self):
         """ Returns the Title of the current article by looking for the '.promo-title a' css selector
@@ -173,38 +158,7 @@ class CustomSelenium:
         turn_page = self._browser.find_element("css:{}".format(turn_page_locator))
         turn_page.click()
         time.sleep(8)
-
-
-    def kill_popup(self):
-        ''' Closes the popup asking if I want to pay for scraping news
-        '''
-        shadow_host_selector = 'modality-custom-element'
-        close_pop_locator = '.met-flyout-close'
-        
-        self._browser.execute_javascript("""
-            const shadowHostSelector = 'modality-custom-element';
-            const closePopSelector = '.met-flyout-close'; // CSS selector for the element to be clicked
-
-            // Find the shadow host element
-            const shadowHost = document.querySelector(shadowHostSelector);
-            if (!shadowHost) {
-                throw new Error('Shadow host element not found');
-            }
-
-            // Access the shadow root
-            const shadowRoot = shadowHost.shadowRoot;
-            if (!shadowRoot) {
-                throw new Error('Shadow root not found');
-            }
-
-            // Find and click the close pop element
-            const closePopElement = shadowRoot.querySelector(closePopSelector);
-            if (!closePopElement) {
-                throw new Error('Close pop element inside target not found');
-            }
-
-            closePopElement.click(); // Click the element directly
-        """)
+        logger.info('Next Page!')
 
     def scrolldown(self):
         ''' Scrolls for a distance; it is useful to activate the popup before it messes up
@@ -220,6 +174,7 @@ class CustomSelenium:
     def news_fetch(self):
         ''' Main function that calls the rest of them
         '''
+        logger.info('Initiated news fetch.')
 
         # not control room
         # self._browser.open_browser(url=ConfigManager.BASE_URL, browser="chrome")
@@ -248,9 +203,10 @@ class CustomSelenium:
         # self.kill_popup()
         time.sleep(8)
 
+        logger.info('Applying sections...')
         for section in ConfigManager.SECTIONS:
             filter_xpath = ConfigManager.SECTION_CODES[section]
-            print(section)
+            logger.info(section, "applied.")
             filter = self._browser.find_element("xpath:{}".format(filter_xpath))
             try:
                 # Attempt to click element A
@@ -284,9 +240,8 @@ class CustomSelenium:
 
             for promo in promo_elements:
                 limit_date, date_str = self.get_news_date(promo)
-                print(limit_date)
-                print(limit_date > self.start_date)
-                print(self.start_date, self.end_date)
+                logger.info('is ',limit_date ,' within ',self.end_date , ' and ',  self.start_date, ' ? ')
+                logger.info(limit_date >= self.start_date)
                 if limit_date >= self.start_date:
 
                     title = self.get_news_title(promo)
@@ -300,16 +255,18 @@ class CustomSelenium:
                     
                     self._news_list["title"].append(title)
                     self._news_list["description"].append(description)
-                    self._news_list["date"].append(date_str)
+                    self._news_list["date"].append(date_str[:-9])
                     self._news_list["phrase_count"].append(search_count)
                     self._news_list["contains_money"].append(has_money)
                     self._picture_link_list.append(image_url)
                     self._news_list["picture_filename"].append(image_name)
 
             self.turn_page()
-
+        logger.info('Files determined. Starting file creation...')
         self.excel.write_in_excel_file(self._news_list)
         self.download_article_picture()
+
+        logger.info('News fetched')
 
 # not control room
 # cs = CustomSelenium()
